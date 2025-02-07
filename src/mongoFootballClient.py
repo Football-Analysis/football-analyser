@@ -1,5 +1,4 @@
 from pymongo import MongoClient, ASCENDING
-from tqdm import tqdm
 from typing import List
 from .data_models.match import Match
 from datetime import datetime

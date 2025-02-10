@@ -3,7 +3,7 @@ from src.config import Config as conf
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, log_loss
 
 mfc = MongoFootballClient(conf.MONGO_URL)
 
@@ -42,7 +42,10 @@ y_pred = classifier.predict(test_features)
 train_pred = classifier.predict(train_features)
 
 ac_score = accuracy_score(test_labels, y_pred)
+loss_score = log_loss(test_labels, y_pred)
 print(f"TEST ACCURACY: {ac_score}")
+print(f"TEST LOG LOSS: {loss_score}")
+
 
 ac_score = accuracy_score(train_labels, train_pred)
 print(f"TRAIN ACCURACY: {ac_score}")
@@ -51,11 +54,11 @@ print(f"TRAIN ACCURACY: {ac_score}")
 y_pred = classifier.predict_proba(features)
 print(y_pred[:10])
 
-pred_df = pd.DataFrame(match_id)
-pred_df["results"] = results
+# pred_df = pd.DataFrame(match_id)
+# pred_df["results"] = results
 
-pred_df["home_win"] = y_pred[:,0]
-pred_df["away_win"] = y_pred[:,1]
-pred_df["draw"] = y_pred[:,2]
-print(pred_df.head(1))
+# pred_df["home_win"] = y_pred[:,0]
+# pred_df["away_win"] = y_pred[:,1]
+# pred_df["draw"] = y_pred[:,2]
+# print(pred_df.head(1))
 

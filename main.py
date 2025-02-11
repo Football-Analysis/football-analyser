@@ -35,24 +35,31 @@ print('Training Labels Shape:', train_labels.shape)
 print('Testing Features Shape:', test_features.shape)
 print('Testing Labels Shape:', test_labels.shape)
 
-classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', random_state = 42, verbose=1, class_weight="balanced", max_depth=10)
+classifier = RandomForestClassifier(n_estimators = 300, criterion = 'log_loss', random_state = 42, verbose=2, max_depth=15)
 classifier.fit(train_features, train_labels)
 
+y_pred_prob = classifier.predict_proba(test_features)
 y_pred = classifier.predict(test_features)
-train_pred = classifier.predict(train_features)
+#train_pred = classifier.predict_proba(train_features)
+
+
+print(y_pred[:5])
+print(test_labels.head(5))
 
 ac_score = accuracy_score(test_labels, y_pred)
-loss_score = log_loss(test_labels, y_pred)
+loss_score = log_loss(test_labels, y_pred_prob)
+
+
 print(f"TEST ACCURACY: {ac_score}")
 print(f"TEST LOG LOSS: {loss_score}")
 
 
-ac_score = accuracy_score(train_labels, train_pred)
-print(f"TRAIN ACCURACY: {ac_score}")
+#ac_score = accuracy_score(train_labels, train_pred)
+#print(f"TRAIN ACCURACY: {ac_score}")
 
 
-y_pred = classifier.predict_proba(features)
-print(y_pred[:10])
+#y_pred = classifier.predict_proba(features)
+#print(y_pred[:10])
 
 # pred_df = pd.DataFrame(match_id)
 # pred_df["results"] = results

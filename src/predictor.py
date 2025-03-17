@@ -35,27 +35,26 @@ class FootballPredictor:
                                                                                                         test_size = 0.20,
                                                                                                         random_state = 42)
         
-    def create_model(self):
-        param_grid = {"n_estimators": [50, 100, 200, 300, 500],
-                      "max_features": ["log2", "sqrt"],
-                      "max_depth": [5,15,25,35],
-                      'min_samples_leaf': [1, 2, 4],
-                      'min_samples_split': [2, 5, 10],
-                      'bootstrap': [True, False]}
+    def create_model(self, grid_search=False):
+        if grid_search:
+            param_grid = {"n_estimators": [50, 100, 200, 300, 500],
+                        "max_features": ["log2", "sqrt"],
+                        "max_depth": [5,15,25,35],
+                        'min_samples_leaf': [1, 2, 4],
+                        'min_samples_split': [2, 5, 10],
+                        'bootstrap': [True, False]}
 
-        rf = RandomForestClassifier()
-        rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 3, verbose=2, random_state=42, n_jobs = -1)
-        rf_random.fit(self.train_features, self.train_labels)
-        best_params = rf_random.best_estimator_
-        print(f"best params found were - {best_params}")
+            rf = RandomForestClassifier()
+            rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+            rf_random.fit(self.train_features, self.train_labels)
+            best_params = rf_random.best_estimator_
+            print(f"best params found were - {best_params}")
 
-        self.classifier = RandomForestClassifier(n_estimators=best_params["n_estimators"],
+        self.classifier = RandomForestClassifier(n_estimators=300
                                                  criterion='log_loss',
-                                                 max_features=best_params["max_features"],
-                                                 max_depth=best_params["max_depth"],
-                                                 min_samples_leaf=best_params["min_samples_leaf"],
-                                                 min_samples_split=best_params["min_samples_split"],
-                                                 bootstrap=best_params["bootstrap"],
+                                                 max_features='log2',
+                                                 max_depth=15,
+                                                 bootstrap=False,
                                                  random_state = 42,
                                                  verbose=2)
         

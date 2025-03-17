@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, log_loss
 import pickle
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+import os
 
 
 class FootballPredictor:
@@ -70,6 +71,15 @@ class FootballPredictor:
 
         print(f"TEST ACCURACY: {ac_score}")
         print(f"TEST LOG LOSS: {loss_score}")
+
+    def save_model(self):
+        print(os.path.dirname(__file__))
+        with open('model.pkl','wb') as f:
+            pickle.dump(self.classifier,f)
+
+    def load_model(self):
+        with open('model.pkl', 'rb') as f:
+            self.classifier = pickle.load(f)
 
     def create_and_evaluate(self):
         self.engineer_feature()

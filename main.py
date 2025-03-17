@@ -2,4 +2,4 @@
 from src.predictor import FootballPredictor
 
 fp = FootballPredictor()
-fp.save_model()
+fp.create_and_evaluate()

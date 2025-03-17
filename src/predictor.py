@@ -85,6 +85,7 @@ class FootballPredictor:
         self.engineer_feature()
         self.create_model()
         self.evaluate_model()
+        self.save_model()
 
 
 

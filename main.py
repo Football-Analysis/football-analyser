@@ -39,26 +39,10 @@ classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', r
 classifier.fit(train_features, train_labels)
 
 y_pred = classifier.predict(test_features)
+y_pred_prob = classifier.predict_proba(test_features)
 train_pred = classifier.predict(train_features)
 
 ac_score = accuracy_score(test_labels, y_pred)
 loss_score = log_loss(test_labels, y_pred)
 print(f"TEST ACCURACY: {ac_score}")
 print(f"TEST LOG LOSS: {loss_score}")
-
-
-ac_score = accuracy_score(train_labels, train_pred)
-print(f"TRAIN ACCURACY: {ac_score}")
-
-
-y_pred = classifier.predict_proba(features)
-print(y_pred[:10])
-
-# pred_df = pd.DataFrame(match_id)
-# pred_df["results"] = results
-
-# pred_df["home_win"] = y_pred[:,0]
-# pred_df["away_win"] = y_pred[:,1]
-# pred_df["draw"] = y_pred[:,2]
-# print(pred_df.head(1))
-

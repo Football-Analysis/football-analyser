@@ -73,8 +73,8 @@ class FootballPredictor:
         print(f"TEST LOG LOSS: {loss_score}")
 
     def save_model(self):
-        print(os.path.dirname(__file__))
-        with open('model.pkl','wb') as f:
+        save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
+        with open(save_path,'wb') as f:
             pickle.dump(self.classifier,f)
 
     def load_model(self):

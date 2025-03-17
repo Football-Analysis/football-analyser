@@ -35,14 +35,17 @@ print('Training Labels Shape:', train_labels.shape)
 print('Testing Features Shape:', test_features.shape)
 print('Testing Labels Shape:', test_labels.shape)
 
-classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', random_state = 42, verbose=1, class_weight="balanced", max_depth=10)
+classifier = RandomForestClassifier(n_estimators = 300, criterion = 'log_loss', random_state = 42, verbose=2, max_depth=15)
 classifier.fit(train_features, train_labels)
 
+y_pred_prob = classifier.predict_proba(test_features)
 y_pred = classifier.predict(test_features)
 y_pred_prob = classifier.predict_proba(test_features)
 train_pred = classifier.predict(train_features)
 
 ac_score = accuracy_score(test_labels, y_pred)
-loss_score = log_loss(test_labels, y_pred)
+loss_score = log_loss(test_labels, y_pred_prob)
+
 print(f"TEST ACCURACY: {ac_score}")
 print(f"TEST LOG LOSS: {loss_score}")
+

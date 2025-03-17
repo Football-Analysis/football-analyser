@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, log_loss
 import pickle
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
 
 class FootballPredictor:
@@ -35,8 +36,30 @@ class FootballPredictor:
                                                                                                         random_state = 42)
         
     def create_model(self):
-        self.classifier = RandomForestClassifier(n_estimators = 300, criterion = 'log_loss', random_state = 42, verbose=2, max_depth=15)
+        param_grid = {"n_estimators": [50, 100, 200, 300, 500, 1000],
+                      "max_features": ["auto", "sqrt"],
+                      "max_depth": [5,15,25,35,50],
+                      'min_samples_leaf': [1, 2, 4],
+                      'min_samples_split': [2, 5, 10],
+                      'bootstrap': [True, False]}
+
+        rf = RandomForestClassifier()
+        rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 3, verbose=2, random_state=42, n_jobs = -1)
+        rf_random.fit(self.train_features, self.train_labels)
+        best_params = rf_random.best_estimator_
+
+        self.classifier = RandomForestClassifier(n_estimators=best_params["n_estimators"],
+                                                 criterion='log_loss',
+                                                 max_features=best_params["max_features"],
+                                                 max_depth=best_params["max_depth"],
+                                                 min_samples_leaf=best_params["min_samples_leaf"],
+                                                 min_samples_split=best_params["min_samples_split"],
+                                                 bootstrap=best_params["bootstrap"]
+                                                 random_state = 42,
+                                                 verbose=2)
+        
         self.classifier.fit(self.train_features, self.train_labels)
+
 
     def evaluate_model(self):
         y_pred_prob = self.classifier.predict_proba(self.test_features)

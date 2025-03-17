@@ -54,7 +54,7 @@ class FootballPredictor:
                                                  max_depth=best_params["max_depth"],
                                                  min_samples_leaf=best_params["min_samples_leaf"],
                                                  min_samples_split=best_params["min_samples_split"],
-                                                 bootstrap=best_params["bootstrap"]
+                                                 bootstrap=best_params["bootstrap"],
                                                  random_state = 42,
                                                  verbose=2)
         

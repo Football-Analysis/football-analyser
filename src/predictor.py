@@ -36,9 +36,9 @@ class FootballPredictor:
                                                                                                         random_state = 42)
         
     def create_model(self):
-        param_grid = {"n_estimators": [50, 100, 200, 300, 500, 1000],
-                      "max_features": ["auto", "sqrt"],
-                      "max_depth": [5,15,25,35,50],
+        param_grid = {"n_estimators": [50, 100, 200, 300, 500],
+                      "max_features": ["log2", "sqrt"],
+                      "max_depth": [5,15,25,35],
                       'min_samples_leaf': [1, 2, 4],
                       'min_samples_split': [2, 5, 10],
                       'bootstrap': [True, False]}

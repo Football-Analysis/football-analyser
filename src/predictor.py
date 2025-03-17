@@ -47,6 +47,7 @@ class FootballPredictor:
         rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 3, verbose=2, random_state=42, n_jobs = -1)
         rf_random.fit(self.train_features, self.train_labels)
         best_params = rf_random.best_estimator_
+        print(f"best params found were - {best_params}")
 
         self.classifier = RandomForestClassifier(n_estimators=best_params["n_estimators"],
                                                  criterion='log_loss',

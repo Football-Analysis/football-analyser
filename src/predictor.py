@@ -50,7 +50,7 @@ class FootballPredictor:
             best_params = rf_random.best_estimator_
             print(f"best params found were - {best_params}")
 
-        self.classifier = RandomForestClassifier(n_estimators=300
+        self.classifier = RandomForestClassifier(n_estimators=300,
                                                  criterion='log_loss',
                                                  max_features='log2',
                                                  max_depth=15,

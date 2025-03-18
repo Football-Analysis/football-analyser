@@ -78,7 +78,8 @@ class FootballPredictor:
             pickle.dump(self.classifier,f)
 
     def load_model(self):
-        with open('model.pkl', 'rb') as f:
+        load_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
+        with open(load_path, 'rb') as f:
             self.classifier = pickle.load(f)
 
     def create_and_evaluate(self):
@@ -87,6 +88,9 @@ class FootballPredictor:
         self.evaluate_model()
         self.save_model()
 
+    def load_and_evaluate(self):
+        self.load_model()
+        self.evaluate_model()
 
 
     

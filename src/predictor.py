@@ -104,8 +104,7 @@ class FootballPredictor:
         metadata["away_win"] = away_win
         metadata["draw"] = draw
 
-        for row in metadata:
-            print(row.to_dict())
+        print(type(metadata))
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")

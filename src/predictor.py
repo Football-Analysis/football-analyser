@@ -25,7 +25,7 @@ class FootballPredictor:
         if model is None:
             self.create_model()
         else:
-            self.classifier = self.load_model(model)
+            self.load_model(model)
     
     def engineer_features(self, df: pd.DataFrame):
         for i in range(1,6):

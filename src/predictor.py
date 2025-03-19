@@ -105,7 +105,7 @@ class FootballPredictor:
         metadata["draw"] = draw
 
         for _, row in metadata.iterrows():
-            self.mfc(row.to_dict())
+            self.mfc.save_prediction(row.to_dict())
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")

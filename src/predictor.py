@@ -7,22 +7,21 @@ import pickle
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import os
 import pandas as pd
-from .data_models.prediction import Prediction
+from tqdm import tqdm
 
 
 class FootballPredictor:
     def __init__(self, date=None, model=None):
         self.mfc = MongoFootballClient(conf.MONGO_URL)
-        self.raw_training_observations = self.mfc.get_observations(date)
+        self.raw_training_observations = self.mfc.get_observations(date, False)
         self.training_engineered_features = self.engineer_features(self.raw_training_observations)
         self.model_training_features, self.model_test_features, \
         self.model_training_labels, self.model_test_labels = self.create_train_test_split(self.training_engineered_features)
  
         if date is not None:
-            self.raw_test_features = self.mfc.get_observations(date, match=False)
+            self.raw_test_features = self.mfc.get_observations(date, match=True)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
             self.test_match_ids = pd.DataFrame(self.test_engineered_features["match_id"])
-            print(self.test_match_ids.head())
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
         if model is None:
@@ -104,11 +103,11 @@ class FootballPredictor:
         metadata["away_win"] = away_win
         metadata["draw"] = draw
 
-        for _, row in metadata.iterrows():
+        for _, row in tqdm(metadata.iterrows()):
             self.mfc.save_prediction(row.to_dict())
 
-    def save_model(self):
-        save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
+    def save_model(self, model_name):
+        save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", f"{model_name}.pkl")
         with open(save_path,'wb') as f:
             pickle.dump(self.classifier,f)
 
@@ -119,8 +118,8 @@ class FootballPredictor:
             self.classifier = pickle.load(f)
 
     def evaluate_save_model(self):
-        self.evaluate_model()
-        self.save_model()
+        self.evaluate_model(self.model_test_features, self.model_test_labels)
+        self.save_model("new_model")
 
     def create_predictions(self):
         self.predict(self.test_features, self.test_match_ids)

@@ -19,7 +19,7 @@ class FootballPredictor:
  
         if date is not None:
             self.raw_test_features = self.mfc.get_observations(date, match=False)
-            self.test_engineered_features = self.engineer_features(self.test_engineered_features)
+            self.test_engineered_features = self.engineer_features(self.raw_test_features)
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
         if model is None:

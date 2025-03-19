@@ -84,7 +84,7 @@ class FootballPredictor:
 
     def evaluate_model(self, features, labels):
         y_pred_prob = self.classifier.predict_proba(features)
-        y_pred = self.classifier.predict(labels)
+        y_pred = self.classifier.predict(features)
 
         ac_score = accuracy_score(labels, y_pred)
         loss_score = log_loss(labels, y_pred_prob)

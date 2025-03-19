@@ -20,9 +20,8 @@ class FootballPredictor:
         if date is not None:
             self.raw_test_features = self.mfc.get_observations(date, match=False)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
-            self.test_match_ids = self.test_engineered_features["match_id"]
-            print("*****************")
-            print(type(self.test_match_ids))
+            self.test_match_ids = pd.DataFrame([self.test_engineered_features["match_id"]])
+            print(self.test_match_ids.head())
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
         if model is None:

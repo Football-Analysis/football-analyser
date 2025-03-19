@@ -101,9 +101,9 @@ class FootballPredictor:
         away_win = results[:,1]
         draw = results[:,2]
 
-        metadata["home_win"] = 
-        metadata["away_win"] = 
-        metadata["draw"] = 
+        metadata["home_win"] = home_win
+        metadata["away_win"] = away_win
+        metadata["draw"] = draw
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")

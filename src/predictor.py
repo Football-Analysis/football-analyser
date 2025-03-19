@@ -105,6 +105,7 @@ class FootballPredictor:
             pickle.dump(self.classifier,f)
 
     def load_model(self, model_name):
+        print(f"Loading model {model_name}")
         load_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", f"{model_name}.pkl")
         with open(load_path, 'rb') as f:
             self.classifier = pickle.load(f)

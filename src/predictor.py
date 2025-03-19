@@ -20,6 +20,9 @@ class FootballPredictor:
         if date is not None:
             self.raw_test_features = self.mfc.get_observations(date, match=False)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
+            self.test_match_ids = self.test_engineered_features["match_id"]
+            print("*****************")
+            print(type(self.test_match_ids))
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
         if model is None:
@@ -90,14 +93,17 @@ class FootballPredictor:
         print(f"TEST ACCURACY: {ac_score}")
         print(f"TEST LOG LOSS: {loss_score}")
 
-    def predict(self, observations: pd.DataFrame):
+    def predict(self, observations: pd.DataFrame, metadata: pd.DataFrame):
         results = self.classifier.predict_proba(observations)
-        print(results)
+        print(type(metadata))
+        
         home_win = results[:,0]
         away_win = results[:,1]
         draw = results[:,2]
 
-
+        metadata["home_win"] = 
+        metadata["away_win"] = 
+        metadata["draw"] = 
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
@@ -115,7 +121,7 @@ class FootballPredictor:
         self.save_model()
 
     def create_predictions(self):
-        self.predict(self.test_features)
+        self.predict(self.test_features, self.test_match_ids)
 
 
     

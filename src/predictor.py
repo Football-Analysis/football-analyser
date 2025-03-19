@@ -7,6 +7,7 @@ import pickle
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import os
 import pandas as pd
+from .data_models.prediction import Prediction
 
 
 class FootballPredictor:
@@ -94,8 +95,7 @@ class FootballPredictor:
 
     def predict(self, observations: pd.DataFrame, metadata: pd.DataFrame):
         results = self.classifier.predict_proba(observations)
-        print(type(metadata))
-        
+
         home_win = results[:,0]
         away_win = results[:,1]
         draw = results[:,2]
@@ -105,8 +105,7 @@ class FootballPredictor:
         metadata["draw"] = draw
 
         for _, row in metadata.iterrows():
-            print(row.to_dict())
-            break
+            self.mfc(row.to_dict())
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")

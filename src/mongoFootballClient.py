@@ -14,11 +14,18 @@ class MongoFootballClient:
         self.league_collection = self.football_db["leagues"]
         self.observation_collection = self.football_db["observations"]
 
-    def get_observations(self):
-        observation_df = pd.DataFrame(list(self.observation_collection.find({
+    def get_observations(self, date=None, match=True):
+        mongo_filter = {
             "home_general_5": { "$ne": "N" },
             "away_general_5": { "$ne": "N" }
-        })))
+        }
+
+        if date is not None and match:
+            mongo_filter["match_id"] = {"$regex": date}
+        elif date is not None:
+            mongo_filter["match_id"] = {"$regex": f"^((?!{date}).)*$"}
+
+        observation_df = pd.DataFrame(list(self.observation_collection.find(mongo_filter)))
         return observation_df
 
 

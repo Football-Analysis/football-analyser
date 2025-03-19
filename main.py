@@ -1,5 +1,5 @@
 
 from src.predictor import FootballPredictor
 
-fp = FootballPredictor()
-fp.create_and_evaluate()
+fp = FootballPredictor("2016", "model")
+fp.create_predictions()

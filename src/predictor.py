@@ -6,37 +6,55 @@ from sklearn.metrics import accuracy_score, log_loss
 import pickle
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import os
+import pandas as pd
 
 
 class FootballPredictor:
-    def __init__(self):
+    def __init__(self, date=None, model=None):
         self.mfc = MongoFootballClient(conf.MONGO_URL)
-        self.raw_observations = self.mfc.get_observations()
-        self.classifier = None
-    
-    def engineer_feature(self):
-        for i in range(1,6):
-            self.raw_observations[f"home_general_{i}"] = self.raw_observations[f"home_general_{i}"].astype('category')
-            self.raw_observations[f"home_general_{i}"] = self.raw_observations[f"home_general_{i}"].replace({'W': 2, 'D': 1, 'L': 0})
-
-            self.raw_observations[f"away_general_{i}"] = self.raw_observations[f"away_general_{i}"].astype('category')
-            self.raw_observations[f"away_general_{i}"] = self.raw_observations[f"away_general_{i}"].replace({'W': 2, 'D': 1, 'L': 0})
-
-            self.raw_observations[f"home_home_{i}"] = self.raw_observations[f"home_home_{i}"].astype('category')
-            self.raw_observations[f"home_home_{i}"] = self.raw_observations[f"home_home_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
-
-            self.raw_observations[f"away_away_{i}"] = self.raw_observations[f"away_away_{i}"].astype('category')
-            self.raw_observations[f"away_away_{i}"] = self.raw_observations[f"away_away_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
-    
-        self.raw_observations['result'] = self.raw_observations.result.astype('category')
-        self.target = self.raw_observations["result"].replace({'Home Win': 0, 'Away Win': 1, 'Draw': 2})
-        self.features = self.raw_observations.drop(["result", "_id", "match_id"], axis=1)
-        self.train_features, self.test_features, self.train_labels, self.test_labels = train_test_split(self.features,
-                                                                                                        self.target,
-                                                                                                        test_size = 0.20,
-                                                                                                        random_state = 42)
+        self.raw_training_observations = self.mfc.get_observations(date)
+        self.training_engineered_features = self.engineer_features(self.raw_training_observations)
+        self.model_training_features, self.model_test_features, \
+        self.model_training_labels, self.model_test_labels = self.create_train_test_split(self.training_engineered_features)
+ 
+        if date is not None:
+            self.raw_test_features = self.mfc.get_observations(date, match=False)
+            self.test_engineered_features = self.engineer_features(self.test_engineered_features)
+            self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
-    def create_model(self, grid_search=False):
+        if model is None:
+            self.create_model()
+        else:
+            self.classifier = self.load_model(model)
+    
+    def engineer_features(self, df: pd.DataFrame):
+        for i in range(1,6):
+            df[f"home_general_{i}"] = df[f"home_general_{i}"].astype('category')
+            df[f"home_general_{i}"] = df[f"home_general_{i}"].replace({'W': 2, 'D': 1, 'L': 0})
+
+            df[f"away_general_{i}"] = df[f"away_general_{i}"].astype('category')
+            df[f"away_general_{i}"] = df[f"away_general_{i}"].replace({'W': 2, 'D': 1, 'L': 0})
+
+            df[f"home_home_{i}"] = df[f"home_home_{i}"].astype('category')
+            df[f"home_home_{i}"] = df[f"home_home_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
+
+            df[f"away_away_{i}"] = df[f"away_away_{i}"].astype('category')
+            df[f"away_away_{i}"] = df[f"away_away_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
+    
+        df['result'] = df.result.astype('category')
+
+        return df
+    
+    def create_train_test_split(self, observations: pd.DataFrame):
+        target = observations["result"].replace({'Home Win': 0, 'Away Win': 1, 'Draw': 2})
+        features = observations.drop(["result", "_id", "match_id"], axis=1)
+        train_features, test_features, train_labels, test_labels = train_test_split(features,
+                                                                                    target,
+                                                                                    test_size = 0.20,
+                                                                                    random_state = 42)
+        return train_features, test_features, train_labels, test_labels
+        
+    def create_model(self, train_features, train_labels, grid_search=False):
         if grid_search:
             param_grid = {"n_estimators": [50, 100, 200, 300, 500],
                         "max_features": ["log2", "sqrt"],
@@ -59,38 +77,44 @@ class FootballPredictor:
                                                  random_state = 42,
                                                  verbose=2)
         
-        self.classifier.fit(self.train_features, self.train_labels)
+        self.classifier.fit(train_features, train_labels)
 
 
-    def evaluate_model(self):
-        y_pred_prob = self.classifier.predict_proba(self.test_features)
-        y_pred = self.classifier.predict(self.test_features)
+    def evaluate_model(self, features, labels):
+        y_pred_prob = self.classifier.predict_proba(features)
+        y_pred = self.classifier.predict(labels)
 
-        ac_score = accuracy_score(self.test_labels, y_pred)
-        loss_score = log_loss(self.test_labels, y_pred_prob)
+        ac_score = accuracy_score(labels, y_pred)
+        loss_score = log_loss(labels, y_pred_prob)
 
         print(f"TEST ACCURACY: {ac_score}")
         print(f"TEST LOG LOSS: {loss_score}")
+
+    def predict(self, observations: pd.DataFrame):
+        results = self.classifier.predict_proba(observations)
+        print(results)
+        home_win = results[:,0]
+        away_win = results[:,1]
+        draw = results[:,2]
+
+
 
     def save_model(self):
         save_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
         with open(save_path,'wb') as f:
             pickle.dump(self.classifier,f)
 
-    def load_model(self):
-        load_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", "model.pkl")
+    def load_model(self, model_name):
+        load_path = os.path.join(os.path.dirname(__file__), "..", "ml-models", f"{model_name}.pkl")
         with open(load_path, 'rb') as f:
             self.classifier = pickle.load(f)
 
-    def create_and_evaluate(self):
-        self.engineer_feature()
-        self.create_model()
+    def evaluate_save_model(self):
         self.evaluate_model()
         self.save_model()
 
-    def load_and_evaluate(self):
-        self.load_model()
-        self.evaluate_model()
+    def create_predictions(self):
+        self.predict(self.test_features)
 
 
     

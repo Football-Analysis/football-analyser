@@ -11,21 +11,27 @@ from tqdm import tqdm
 
 
 class FootballPredictor:
-    def __init__(self, date=None, model=None):
+    def __init__(self, date=None, model=None, grid_search=False):
         self.mfc = MongoFootballClient(conf.MONGO_URL)
-        self.raw_training_observations = self.mfc.get_observations(date, False)
-        self.training_engineered_features = self.engineer_features(self.raw_training_observations)
-        self.model_training_features, self.model_test_features, \
-        self.model_training_labels, self.model_test_labels = self.create_train_test_split(self.training_engineered_features)
+
+        if model is None:
+            self.raw_training_observations = self.mfc.get_observations(date, False)
+            self.training_engineered_features = self.engineer_features(self.raw_training_observations)
+            self.model_training_features, self.model_test_features, \
+            self.model_training_labels, self.model_test_labels = self.create_train_test_split(self.training_engineered_features)
  
         if date is not None:
             self.raw_test_features = self.mfc.get_observations(date, match=True)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
             self.test_match_ids = pd.DataFrame(self.test_engineered_features["match_id"])
+            self.test_labels = self.test_engineered_features["result"].replace({'Home Win': 0, 'Away Win': 1, 'Draw': 2})
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
         
         if model is None:
-            self.create_model()
+            if grid_search:
+                self.create_model(self.model_training_features, self.model_training_labels, True)
+            else:
+                self.create_model(self.model_training_features, self.model_training_labels)
         else:
             self.load_model(model)
     
@@ -66,8 +72,8 @@ class FootballPredictor:
                         'bootstrap': [True, False]}
 
             rf = RandomForestClassifier()
-            rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 3, verbose=2, random_state=42, n_jobs = -1)
-            rf_random.fit(self.train_features, self.train_labels)
+            rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 50, cv = 3, verbose=2, random_state=42, n_jobs=1)
+            rf_random.fit(self.model_training_features, self.model_training_labels)
             best_params = rf_random.best_estimator_
             print(f"best params found were - {best_params}")
 
@@ -75,9 +81,12 @@ class FootballPredictor:
                                                  criterion='log_loss',
                                                  max_features='log2',
                                                  max_depth=15,
-                                                 bootstrap=False,
+                                                 bootstrap=True,
                                                  random_state = 42,
-                                                 verbose=2)
+                                                 min_samples_leaf=4,
+                                                 min_samples_split=10,
+                                                 verbose=2,
+                                                 n_jobs=-1)
         
         self.classifier.fit(train_features, train_labels)
 
@@ -86,6 +95,9 @@ class FootballPredictor:
         y_pred_prob = self.classifier.predict_proba(features)
         y_pred = self.classifier.predict(features)
 
+        print(len(y_pred))
+        print(y_pred_prob[:5])
+        print(labels[:5])
         ac_score = accuracy_score(labels, y_pred)
         loss_score = log_loss(labels, y_pred_prob)
 
@@ -119,7 +131,7 @@ class FootballPredictor:
 
     def evaluate_save_model(self):
         self.evaluate_model(self.model_test_features, self.model_test_labels)
-        self.save_model("new_model")
+        self.save_model("model-2024")
 
     def create_predictions(self):
         self.predict(self.test_features, self.test_match_ids)

@@ -24,7 +24,8 @@ class MongoFootballClient:
     def get_observations(self, date=None, match=True, next_games=False) -> pd.DataFrame:
         query = {
             "home_general_5": { "$ne": "N" },
-            "away_general_5": { "$ne": "N" }
+            "away_general_5": { "$ne": "N" },
+            "before_gw_ten": 0
             }
         if next_games:
             col = self.next_observation_collection
@@ -99,3 +100,6 @@ class MongoFootballClient:
     def get_team_from_id(self, team_id: int) -> str:
         team = self.team_collection.find_one({"id": team_id})
         return team["name"]
+    
+    def delete_next_predictions(self):
+        self.next_prediction_collection.delete_many({})

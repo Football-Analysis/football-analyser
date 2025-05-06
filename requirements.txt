@@ -1,3 +1,6 @@
 pymongo
 scikit-learn
 pandas
+schedule
+pytz
+tqdm

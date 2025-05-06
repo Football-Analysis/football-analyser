@@ -43,36 +43,19 @@ class FootballPredictor:
                 self.create_model(self.model_training_features, self.model_training_labels, True)
             else:
                 self.create_model(self.model_training_features, self.model_training_labels)
-                self.create_logistic_model(self.model_training_features, self.model_training_labels)
+                #self.create_logistic_model(self.model_training_features, self.model_training_labels)
         else:
             print("loading")
             self.load_model(model)
             #self.create_logistic_model(self.model_training_features, self.model_training_labels)
     
-    def engineer_features(self, df: pd.DataFrame):
-        for i in range(1,6):
-            df[f"home_won_last_game"] = df[f"home_general_1"].astype('category')
-            df[f"home_won_last_game"] = df[f"home_won_last_game"].replace({'W': 1, 'D': 0, 'L': 0})
-
-            df[f"away_won_last_game"] = df[f"away_general_1"].astype('category')
-            df[f"away_won_last_game"] = df[f"away_won_last_game"].replace({'W': 1, 'D': 0, 'L': 0})
-
-            df[f"home_home_{i}"] = df[f"home_home_{i}"].astype('category')
-            df[f"home_home_{i}"] = df[f"home_home_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
-
-            df[f"away_away_{i}"] = df[f"away_away_{i}"].astype('category')
-            df[f"away_away_{i}"] = df[f"away_away_{i}"].replace({'W': 3, 'D': 2, 'L': 0, 'N': 1})
-
-
-
-        
-        df = df.drop(["away_general_unknown", "away_general_wins", "away_general_losses", "home_general_unknown", "home_home_unknown",
-                      "away_away_unknown", "away_general_5", "away_general_4", "home_home_wins", "home_home_losses",
-                      "away_away_1", "home_general_5", "home_general_4", "away_away_2", "home_general_3", "away_general_3",
-                      "away_general_1", "away_general_2", "away_general_3", "home_general_1", "home_home_3", "away_away_draws", 
-                      "home_general_draws", "home_general_wins", "home_general_losses", "away_general_draws",
-                      "home_home_1", "home_home_2", "home_general_2", "home_general_3", "home_home_4", "home_home_5", "away_away_4", "away_away_3", "away_away_5"], axis=1)
-    
+    def engineer_features(self, df: pd.DataFrame):        
+        # df = df.drop(["away_general_unknown", "away_general_wins", "away_general_losses", "home_general_unknown",
+        #               "away_general_5", "away_general_4", "home_general_2",
+        #               "home_general_5", "home_general_4", "home_general_3", "away_general_3",
+        #               "away_general_1", "away_general_2", "away_general_3", "home_general_1", 
+        #               "home_general_draws", "home_general_wins", "home_general_losses", "away_general_draws"], axis=1)
+        #print(df.head())
         df['result'] = df.result.astype('category')
 
         return df
@@ -170,15 +153,15 @@ class FootballPredictor:
             print(importance)
 
     def evaluate_save_model(self):
-        #self.find_importances()
+        self.find_importances()
         #self.evaluate_model(self.model_training_features, self.model_training_labels)
         self.evaluate_model(self.classifier, self.model_test_features, self.model_test_labels)
-        self.evaluate_model(self.log_model, self.model_test_features, self.model_test_labels)
+        #self.evaluate_model(self.log_model, self.model_test_features, self.model_test_labels)
         
-        #self.save_model("production")
+        #self.save_model("v2")
 
     def create_predictions(self):
         self.predict(self.test_features, self.test_match_ids, self.next_games)
-
+        print("Successfully created next predictions")
 
     

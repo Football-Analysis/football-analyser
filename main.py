@@ -1,46 +1,22 @@
 
 from src.predictor import FootballPredictor
+from src.config import Config as conf
+from src.mongoFootballClient import MongoFootballClient
+import schedule
+from pytz import timezone
+from time import sleep
 
+def create_next_predictions():
+    mfc = MongoFootballClient(conf.MONGO_URL)
+    mfc.delete_next_predictions()
+    fp = FootballPredictor(model=conf.PRODUCTION_MODEL, next_games=True)
+    fp.create_predictions()
 
-fp = FootballPredictor(model="production", next_games=True)
-#fp = FootballPredictor()
-#fp.evaluate_save_model()
-#fp.wipe_predictions()
-fp.create_predictions()
-#fp.evaluate_save_model()
+if __name__ == "__main__":
+    schedule.every().day.at("01:00", timezone("GMT")).do(create_next_predictions)
 
-# fp = FootballPredictor(date="2016", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2017", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2018", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2019", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2020", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2021", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2022", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2023", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
-
-# fp = FootballPredictor(date="2024", grid_search=False)
-# #fp.evaluate_save_model()
-# fp.create_predictions()
+    print("Starting scheduled jobs")
+    create_next_predictions()
+    while True:
+        schedule.run_pending()
+        sleep(1)

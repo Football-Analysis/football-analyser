@@ -15,26 +15,39 @@ class MongoFootballClient:
         self.match_collection = self.football_db["matches"]
         self.league_collection = self.football_db["leagues"]
         self.observation_collection = self.football_db["observations"]
+        self.next_observation_collection = self.football_db["next_observations"]
         self.prediction_collection = self.football_db["predictions"]
+        self.next_prediction_collection = self.football_db["next_predictions"]
         self.odds_collection = self.football_db["odds"]
         self.team_collection = self.football_db["teams"]
 
-    def get_observations(self, date=None, match=True) -> pd.DataFrame:
-        mongo_filter = {
+    def get_observations(self, date=None, match=True, next_games=False) -> pd.DataFrame:
+        query = {
             "home_general_5": { "$ne": "N" },
-            "away_general_5": { "$ne": "N" }
-        }
+            "away_general_5": { "$ne": "N" },
+            "before_gw_ten": 0
+            }
+        if next_games:
+            col = self.next_observation_collection
+            query["result"] = "N/A"
+        else:
+            col = self.observation_collection
+            query["result"] = {"$ne": "N/A"} 
 
         if date is not None and match:
-            mongo_filter["match_id"] = {"$regex": date}
+            query["match_id"] = {"$regex": date}
         elif date is not None:
-            mongo_filter["match_id"] = {"$regex": f"^((?!{date}).)*$"}
+            query["match_id"] = {"$regex": f"^((?!{date}).)*$"}
 
-        observation_df = pd.DataFrame(list(self.observation_collection.find(mongo_filter)))
+        observation_df = pd.DataFrame(list(col.find(query)))
         return observation_df
     
-    def save_prediction(self, prediction: dict) -> bool:
-        self.prediction_collection.insert_one(prediction)
+    def save_prediction(self, prediction: dict, next_games=False) -> bool:
+        if next_games:
+            col = self.next_prediction_collection
+        else:
+            col = self.prediction_collection
+        col.insert_one(prediction)
         return True
     
     def get_odds(self, year: str) -> List[Odds]:
@@ -66,7 +79,6 @@ class MongoFootballClient:
         pred = self.prediction_collection.find_one({
             "match_id": f"{date}-{home_team}"
             })
-        
         if pred is not None:
             prediction = Prediction.from_mongo_doc(pred)
         else:
@@ -88,3 +100,6 @@ class MongoFootballClient:
     def get_team_from_id(self, team_id: int) -> str:
         team = self.team_collection.find_one({"id": team_id})
         return team["name"]
+    
+    def delete_next_predictions(self):
+        self.next_prediction_collection.delete_many({})

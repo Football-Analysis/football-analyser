@@ -1,7 +1,6 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient
 from typing import List
 from .data_models.prediction import Prediction
-from datetime import datetime
 import pandas as pd
 from .data_models.odds import Odds
 from .data_models.result import Result
@@ -24,10 +23,12 @@ class MongoFootballClient:
 
     def get_observations(self, date=None, match=True, next_games=False, test=False) -> pd.DataFrame:
         query = {
-            "home_general_5": { "$ne": "N" },
-            "away_general_5": { "$ne": "N" },
-            "before_gw_ten": 0
-            }
+            "home_general_5": {
+                "$ne": "N"},
+            "away_general_5": {
+                "$ne": "N"},
+            "before_gw_ten": 0}
+
         if next_games and not test:
             col = self.next_observation_collection
             query["result"] = "N/A"
@@ -40,7 +41,6 @@ class MongoFootballClient:
         else:
             raise RuntimeError("Cannot predict next games of a test observation run")
 
-        
         if date is not None and match:
             query["match_id"] = {"$regex": date}
         elif date is not None:
@@ -48,7 +48,7 @@ class MongoFootballClient:
 
         observation_df = pd.DataFrame(list(col.find(query)))
         return observation_df
-    
+
     def save_prediction(self, prediction: dict, next_games=False) -> bool:
         if next_games:
             col = self.next_prediction_collection
@@ -56,7 +56,7 @@ class MongoFootballClient:
             col = self.prediction_collection
         col.insert_one(prediction)
         return True
-    
+
     def get_odds(self, year: str) -> List[Odds]:
         raw_odds = self.odds_collection.find({
             "date": {"$regex": year},
@@ -68,11 +68,11 @@ class MongoFootballClient:
         for raw_odd in raw_odds:
             odd = Odds.from_mongo_doc(raw_odd)
             if odd.home_odds != 0 and odd.away_odds != 0 and odd.draw_odds != 0:
-                if 0.99 < (1/odd.home_odds) + (1/odd.away_odds) + (1/odd.draw_odds) < 1.01:
+                if 0.99 < (1 / odd.home_odds) + (1 / odd.away_odds) + (1 / odd.draw_odds) < 1.01:
                     odds.append(odd)
 
         return odds
-    
+
     def get_predictions(self, year) -> List[Prediction]:
         predictions = self.prediction_collection.find({"match_id": {"$regex": year}})
 
@@ -81,17 +81,17 @@ class MongoFootballClient:
             preds_to_return.append(Prediction.from_mongo_doc(prediction))
 
         return preds_to_return
-    
+
     def get_prediction(self, date, home_team):
         pred = self.prediction_collection.find_one({
-            "match_id": f"{date}-{home_team}"
-            })
+            "match_id": f"{date}-{home_team}"})
+
         if pred is not None:
             prediction = Prediction.from_mongo_doc(pred)
         else:
             return None
         return prediction
-    
+
     def get_match_result(self, date, home_team) -> Result:
         matches = self.match_collection.find({
             "date": date,
@@ -103,10 +103,10 @@ class MongoFootballClient:
                 return Result(match["result"])
 
         return False
-        
+
     def get_team_from_id(self, team_id: int) -> str:
         team = self.team_collection.find_one({"id": team_id})
         return team["name"]
-    
+
     def delete_next_predictions(self):
         self.next_prediction_collection.delete_many({})

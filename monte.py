@@ -4,7 +4,7 @@ from tqdm import tqdm
 from random import uniform
 import numpy
 
-initial_bankroll = 100
+initial_bankroll = 2000
 default_bet_percentage = 0.03
 # odds = 2.5
 edge = 0.0
@@ -18,16 +18,17 @@ def run_simulation():
     bankroll_hostory = [bankroll]
 
     for i in range(num_bets):
-        odds = uniform(1.1, 6.0)
+        #odds = uniform(1.1, 6.0)
+        odds = 6.0
         #edge = edges[i]
         #edge = numpy.random.choice([0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2], p=[0.25, 0.2, 0.15, 0.15, 0.1, 0.1, 0.05])
         winning_prob = (1/odds)*(1+edge)
         #sizing_refactor = 2/odds
         #confidence_refactor = edge/0.1
         #bet_amount = default_bet_percentage
-        bet_amount = default_bet_percentage*bankroll
+        bet_amount = min(40,default_bet_percentage*bankroll)
         if np.random.rand() < winning_prob:
-            bankroll += bet_amount * (odds-1)
+            bankroll += (bet_amount * (odds-1))*0.98
         else:
             bankroll -= bet_amount
         bankroll_hostory.append(bankroll)

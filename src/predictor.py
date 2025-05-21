@@ -14,25 +14,26 @@ from numpy import mean
 
 
 class FootballPredictor:
-    def __init__(self, date=None, model=None, grid_search=False, next_games=False):
+    def __init__(self, date=None, model=None, grid_search=False, next_games=False, test=False):
         self.mfc = MongoFootballClient(conf.MONGO_URL)
         self.next_games = next_games
 
         if model is None:
-            self.raw_training_observations = self.mfc.get_observations(date, False)
+            self.raw_training_observations = self.mfc.get_observations(date, False, test=test)
+            print(len(self.raw_training_observations))
             self.training_engineered_features = self.engineer_features(self.raw_training_observations)
             self.model_training_features, self.model_test_features, \
             self.model_training_labels, self.model_test_labels = self.create_train_test_split(self.training_engineered_features)
  
         if date is not None:
-            self.raw_test_features = self.mfc.get_observations(date, match=True)
+            self.raw_test_features = self.mfc.get_observations(date, match=True, test=test)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
             self.test_match_ids = pd.DataFrame(self.test_engineered_features["match_id"])
             self.test_labels = self.test_engineered_features["result"].replace({'Home Win': 0, 'Away Win': 1, 'Draw': 2})
             self.test_features = self.test_engineered_features.drop(["result", "_id", "match_id"], axis=1)
 
         if next_games:
-            self.raw_test_features = self.mfc.get_observations(next_games=self.next_games)
+            self.raw_test_features = self.mfc.get_observations(next_games=self.next_games, test=test)
             self.test_engineered_features = self.engineer_features(self.raw_test_features)
             self.test_match_ids = pd.DataFrame(self.test_engineered_features["match_id"])
             self.test_labels = self.test_engineered_features["result"].replace({'Home Win': 0, 'Away Win': 1, 'Draw': 2})
@@ -79,7 +80,7 @@ class FootballPredictor:
                         'bootstrap': [True, False]}
 
             rf = RandomForestClassifier()
-            rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 10, cv = 4, verbose=2, random_state=42, n_jobs=1, scoring="neg_log_loss")
+            rf_random = RandomizedSearchCV(estimator = rf, param_distributions = param_grid, n_iter = 50, cv = 4, verbose=2, random_state=42, n_jobs=1, scoring="neg_log_loss")
             rf_random.fit(self.model_training_features, self.model_training_labels)
             best_params = rf_random.best_params_
             best_score = rf_random.best_score_

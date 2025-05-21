@@ -16,24 +16,31 @@ class MongoFootballClient:
         self.league_collection = self.football_db["leagues"]
         self.observation_collection = self.football_db["observations"]
         self.next_observation_collection = self.football_db["next_observations"]
+        self.test_observation_collection = self.football_db["test_observations"]
         self.prediction_collection = self.football_db["predictions"]
         self.next_prediction_collection = self.football_db["next_predictions"]
         self.odds_collection = self.football_db["odds"]
         self.team_collection = self.football_db["teams"]
 
-    def get_observations(self, date=None, match=True, next_games=False) -> pd.DataFrame:
+    def get_observations(self, date=None, match=True, next_games=False, test=False) -> pd.DataFrame:
         query = {
             "home_general_5": { "$ne": "N" },
             "away_general_5": { "$ne": "N" },
             "before_gw_ten": 0
             }
-        if next_games:
+        if next_games and not test:
             col = self.next_observation_collection
             query["result"] = "N/A"
-        else:
+        elif not next_games and not test:
             col = self.observation_collection
-            query["result"] = {"$ne": "N/A"} 
+            query["result"] = {"$ne": "N/A"}
+        elif not next_games and test:
+            col = self.test_observation_collection
+            query["result"] = {"$ne": "N/A"}
+        else:
+            raise RuntimeError("Cannot predict next games of a test observation run")
 
+        
         if date is not None and match:
             query["match_id"] = {"$regex": date}
         elif date is not None:

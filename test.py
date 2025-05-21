@@ -1,5 +1,6 @@
 from src.predictor import FootballPredictor
 from src.betting_simulator import BettingSimulator
+import matplotlib.pyplot as plt
 
 #fp = FootballPredictor()
 #fp.create_and_evaluate()
@@ -59,41 +60,62 @@ bs= BettingSimulator("2016", threshold=0.3, initial_bankroll=2000, bet_percentag
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2017", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2017", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2018", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2018", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2019", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2019", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2020", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2020", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2021", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2021", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2022", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2022", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2023", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2023", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
-bs= BettingSimulator("2024", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03)
+histoy = bs.bankroll_history
+bs= BettingSimulator("2024", initial_bankroll=bankroll, threshold=0.3, bet_percentage=0.03, bankroll_history=histoy)
 bankroll = bs.bankroll
 total_bets += bs.predictions
 amount_bet += bs.amount_bet
+histoy = bs.bankroll_history
 
 
 print(f"Total bankroll is {bankroll}")
 print(f"Bets made {total_bets}")
 print(f"Total money gambled {amount_bet}")
+print(histoy)
 
+x = [i for i in range(len(histoy))]
+y = histoy
+
+plt.plot(x, y, color="blue")
+
+plt.title("Bankroll History")
+plt.xlabel("Number of bets")
+plt.ylabel("Bankroll")
+plt.legend()
+
+plt.savefig("bankroll_history_confidence_scale.png")

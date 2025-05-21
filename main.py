@@ -1,4 +1,3 @@
-
 from src.predictor import FootballPredictor
 from src.config import Config as conf
 from src.mongoFootballClient import MongoFootballClient
